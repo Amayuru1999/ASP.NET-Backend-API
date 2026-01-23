@@ -1,8 +1,14 @@
-namespace Backen.Api.Services;
+using System.Net;
+using System.Text.Json;
+using Backend.Api.Dtos;
+using Backend.Api.Models;
+
+
+namespace Backend.Api.Services;
 
 public class ExternalPostService
 {
-    private readonly IHttpClientFactory _clientFactory;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
 
     public ExternalPostService(IHttpClientFactory httpClientFactory)
@@ -10,13 +16,13 @@ public class ExternalPostService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<IReadOnlyList<ExternalPostDto>> GetAllSync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ExternalPostDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         var client = _httpClientFactory.CreateClient("JsonPlaceHolder");
         using var response = await client.GetAsync("/posts", cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            throw new ExternalApiException("❗Failed to fetch posts from external API: ",response.StatusCode);
+            throw new ExternalApiException("❗Failed to fetch posts from external API.", response.StatusCode);
         }
         
         await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
@@ -25,4 +31,36 @@ public class ExternalPostService
                     ?? new List<ExternalPostDto>();
         return posts;
     }
+
+    public async Task<ExternalPostDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        var client = _httpClientFactory.CreateClient("JsonPlaceHolder");
+        using var response = await client.GetAsync($"/posts/{id}", cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ExternalApiException("❗Failed to fetch post from external API.", response.StatusCode);
+        }
+        
+        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        var post = await JsonSerializer.DeserializeAsync<ExternalPostDto>(stream, _serializerOptions,
+            cancellationToken);
+        return post;
+    }
+
+    public sealed class ExternalApiException : Exception
+    {
+        public ExternalApiException(string message, HttpStatusCode statusCode) : base(message)
+    	{
+        StatusCode = statusCode;
+    	}
+
+        public HttpStatusCode StatusCode { get; }
+    }
+
 }
