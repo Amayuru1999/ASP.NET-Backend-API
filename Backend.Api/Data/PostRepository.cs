@@ -41,6 +41,17 @@ namespace Backend.Api.Data
             }
             return results;
         }
+
+        public async Task<PostRecord?> GetByIdAsync(int id, CancellationToken cancellationToken)
+        {
+            const string sql = @"SELECT Id, UserId, Title, Body, FetchedAtUtc FROM dbo.Posts WHERE Id = @Id";
+            await using var command = new SqlCommand(sql, connection);
+            command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
+            await connection.OpenAsync(cancellationToken);
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            
+            return await reader.ReadAsync(cancellationToken) ? Map(reader) : null;
+        }
     }
 }
 
