@@ -10,8 +10,9 @@ namespace Backend.Api.Data
 
         public PostRepository(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
+            var raw = configuration.GetConnectionString("DefaultConnection")
                 ?? throw new InvalidOperationException("❗ConnectionString not set");
+            _connectionString = NormalizeConnectionString(raw);
         }
 
         public async Task<int> GetCountAsync(CancellationToken cancellationToken)
@@ -118,6 +119,36 @@ namespace Backend.Api.Data
                 FetchedAtUtc = reader.GetDateTime(4),
             };
         }
+
+        private static string NormalizeConnectionString(string connectionString)
+        {
+            var segments = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var normalized = new List<string>(segments.Length);
+
+            foreach (var segment in segments)
+            {
+                var trimmed = segment.Trim();
+                if (trimmed.Length == 0)
+                {
+                    continue;
+                }
+
+                var equalsIndex = trimmed.IndexOf('=');
+                if (equalsIndex <= 0)
+                {
+                    normalized.Add(trimmed);
+                    continue;
+                }
+
+                var key = trimmed[..equalsIndex];
+                var value = trimmed[(equalsIndex + 1)..];
+
+                var normalizedKey = string.Join(" ", key.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+                var normalizedValue = value.Replace("\r", string.Empty).Replace("\n", string.Empty).Trim();
+                normalized.Add($"{normalizedKey}={normalizedValue}");
+            }
+
+            return string.Join(";", normalized) + ";";
+        }
     }
 }
-
