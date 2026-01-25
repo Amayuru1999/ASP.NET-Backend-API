@@ -42,7 +42,7 @@ Backend.Api/database/schema.sql contains the schema and it creates:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=PostDb;User Id=sa;Password=;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=localhost,1433;Database=PostDb;User ID=sa;Password=;TrustServerCertificate=True;"
   },
   "ExternalApi": {
     "BaseUrl": "https://jsonplaceholder.typicode.com"
@@ -51,24 +51,54 @@ Backend.Api/database/schema.sql contains the schema and it creates:
 ```
  
 ## Export env in the terminal
-```json
-export ConnectionStrings__DefaultConnection="Server=localhost,1433;Database=PostDb;UserId=sa;Password=Amayuru@1999;TrustServerCertificate=True;"
+### macOS / Linux (bash/zsh)
+```bash
+export ConnectionStrings__DefaultConnection="Server=localhost,1433;Database=PostDb;User ID=sa;Password=<YOUR_PASSWORD>;TrustServerCertificate=True;"
 ```
 
-## Create docker container for SQL Server
-
-```json
-amayuruamarasinghe@Amayurus-Mac-mini Backend.Api %   docker exec -i my-sql /opt/mssql-tools18/bin/sqlcmd \                                                        
-    -S localhost,1433 -U sa -P "Amayuru@1999" -C \
-    -i /var/opt/mssql/data/schema.sql
+### Windows PowerShell
+```powershell
+$env:ConnectionStrings__DefaultConnection="Server=localhost,1433;Database=PostDb;User ID=sa;Password=<YOUR_PASSWORD>;TrustServerCertificate=True;"
 ```
+
+### Windows Command Prompt (cmd)
+```bat
+set ConnectionStrings__DefaultConnection=Server=localhost,1433;Database=PostDb;User ID=sa;Password=<YOUR_PASSWORD>;TrustServerCertificate=True;
+```
+
+## Create SQL Server container
+### macOS / Linux (bash/zsh)
+```bash
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=<YOUR_PASSWORD>" \
+  -p 1433:1433 --name my-sql -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
 ## Copy and Apply Schema
-
-```json
+### macOS / Linux (bash/zsh)
+```bash
 docker cp Backend.Api/database/schema.sql my-sql:/var/opt/mssql/data/schema.sql
+docker exec -i my-sql /opt/mssql-tools18/bin/sqlcmd \
+  -S localhost,1433 -U sa -P "<YOUR_PASSWORD>" -C \
+  -i /var/opt/mssql/data/schema.sql
+```
+
+### Windows PowerShell
+```powershell
+docker cp Backend.Api\database\schema.sql my-sql:/var/opt/mssql/data/schema.sql
+docker exec -i my-sql /opt/mssql-tools18/bin/sqlcmd `
+  -S localhost,1433 -U sa -P "<YOUR_PASSWORD>" -C `
+  -i /var/opt/mssql/data/schema.sql
+```
+
+### Windows Command Prompt (cmd)
+```bat
+docker cp Backend.Api\database\schema.sql my-sql:/var/opt/mssql/data/schema.sql
+docker exec -i my-sql /opt/mssql-tools18/bin/sqlcmd ^
+  -S localhost,1433 -U sa -P "<YOUR_PASSWORD>" -C ^
+  -i /var/opt/mssql/data/schema.sql
 ```
 ## Build and Run
-```json
+```bash
 cd Backend.Api
 
 dotnet restore
@@ -80,9 +110,9 @@ dotnet run
 
 ## Example Requests
 
-```json
+```bash
 curl http://localhost:5000/api/posts
 ```
-```json
+```bash
 curl http://localhost:5000/api/posts/1
 ```
