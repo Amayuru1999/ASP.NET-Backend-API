@@ -42,10 +42,10 @@ public sealed class PostController : ControllerBase
         }
         catch (ExternalPostService.ExternalApiException ex)
         {
-            return StatusCode(StatusCodes.Status500InternalServerError, new
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
             {
-                message = "Database error occurred while fetching posts.",
-                detail = ex.Message
+                message = ex.Message,
+                status = (int)ex.StatusCode
             });
         }
         catch (SqlException ex)

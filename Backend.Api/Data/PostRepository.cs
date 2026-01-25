@@ -28,7 +28,7 @@ namespace Backend.Api.Data
 
         public async Task<IReadOnlyList<PostRecord>> GetAllAsync(CancellationToken cancellationToken)
         {
-            const string sql = @"SELECT Id, Title, Body, FetchedAtUtc FROM dbo.Posts ORDER BY Id";
+            const string sql = @"SELECT Id, UserId, Title, Body, FetchedAtUtc FROM dbo.Posts ORDER BY Id";
             
             var results = new List<PostRecord>();
             await using var connection = new SqlConnection(_connectionString);
