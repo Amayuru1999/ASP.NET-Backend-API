@@ -8,7 +8,7 @@ using Microsoft.Data.SqlClient;
 namespace Backend.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/posts")]
 public sealed class PostController : ControllerBase
 {
     private readonly IPostRepository _repository;
