@@ -67,6 +67,37 @@ namespace Backend.Api.Data
             await connection.OpenAsync(cancellationToken);
             await command.ExecuteNonQueryAsync(cancellationToken);
         }
+
+        public async Task InsertManyAsync(IEnumerable<PostRecord> posts, CancellationToken cancellationToken)
+        {
+            const string sql = @"IF NOT EXISTS (SELECT 1 FROM dbo.Posts WHERE Id = @Id)
+                                 BEGIN
+                                    INSERT INTO dbo.Posts  (Id, UserId, Title, Body, FetchedAtUtc)
+                                    VALUES (@Id, @UserId, @Title, @Body, @FetchedAtUtc)
+                                 END";
+            await using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync(cancellationToken);
+            await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
+            var sqlTransaction = (SqlTransaction)transaction;
+
+            try
+            {
+                foreach (var post in posts)
+                {
+                    await using var command = new SqlCommand(sql, connection, sqlTransaction);
+                    AddParameters(command, post);
+                    await command.ExecuteNonQueryAsync(cancellationToken);
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+            }
+            catch
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                throw;
+            }
+        }
+        
     }
 }
 
