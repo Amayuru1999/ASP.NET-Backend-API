@@ -97,7 +97,27 @@ namespace Backend.Api.Data
                 throw;
             }
         }
-        
+
+        private static void AddParameters(SqlCommand command, PostRecord post)
+        {
+            command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = post.Id });
+            command.Parameters.Add(new SqlParameter("@UserId", SqlDbType.Int) { Value = post.UserId });
+            command.Parameters.Add(new SqlParameter("@Title", SqlDbType.NVarChar, 200) { Value = post.Title });
+            command.Parameters.Add(new SqlParameter("@Body", SqlDbType.NVarChar, -1) { Value = post.Body });
+            command.Parameters.Add(new SqlParameter("@FetchedAtUtc", SqlDbType.DateTime2) { Value = post.FetchedAtUtc });
+        }
+
+        private static PostRecord Map(SqlDataReader reader)
+        {
+            return new PostRecord
+            {
+                Id = reader.GetInt32(0),
+                UserId = reader.GetInt32(1),
+                Title = reader.GetString(2),
+                Body = reader.GetString(3),
+                FetchedAtUtc = reader.GetDateTime(4),
+            };
+        }
     }
 }
 
