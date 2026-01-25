@@ -6,5 +6,5 @@ public class PostRecord
     public int UserId { get; init; }
     public string Title { get; init; } = string.Empty;
     public string Body { get; init; } = string.Empty;
-    public DateTime FetchedAt { get; init; }
+    public DateTime FetchedAtUtc { get; init; }
 }
