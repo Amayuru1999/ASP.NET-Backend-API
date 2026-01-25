@@ -45,12 +45,27 @@ namespace Backend.Api.Data
         public async Task<PostRecord?> GetByIdAsync(int id, CancellationToken cancellationToken)
         {
             const string sql = @"SELECT Id, UserId, Title, Body, FetchedAtUtc FROM dbo.Posts WHERE Id = @Id";
+            await using var connection = new SqlConnection(_connectionString);
             await using var command = new SqlCommand(sql, connection);
             command.Parameters.Add(new SqlParameter("@Id", SqlDbType.Int) { Value = id });
             await connection.OpenAsync(cancellationToken);
             await using var reader = await command.ExecuteReaderAsync(cancellationToken);
             
             return await reader.ReadAsync(cancellationToken) ? Map(reader) : null;
+        }
+
+        public async Task InsertAsync(PostRecord post, CancellationToken cancellationToken)
+        {
+            const string sql = @"IF NOT EXISTS (SELECT 1 FROM dbo.Posts WHERE Id = @Id)
+                                BEGIN
+                                    INSERT INTO dbo.Posts  (Id, UserId, Title, Body, FetchedAtUtc)
+                                    VALUES (@Id, @UserId, @Title, @Body, @FetchedAtUtc)
+                                END";
+            await using var connection = new SqlConnection(_connectionString);
+            await using var command = new SqlCommand(sql, connection);
+            AddParameters(command, post);
+            await connection.OpenAsync(cancellationToken);
+            await command.ExecuteNonQueryAsync(cancellationToken);
         }
     }
 }
