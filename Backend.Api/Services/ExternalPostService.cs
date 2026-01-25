@@ -18,7 +18,7 @@ public class ExternalPostService
 
     public async Task<IReadOnlyList<ExternalPostDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var client = _httpClientFactory.CreateClient("JsonPlaceHolder");
+        var client = _httpClientFactory.CreateClient("JsonPlaceholder");
         using var response = await client.GetAsync("/posts", cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
@@ -34,7 +34,7 @@ public class ExternalPostService
 
     public async Task<ExternalPostDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var client = _httpClientFactory.CreateClient("JsonPlaceHolder");
+        var client = _httpClientFactory.CreateClient("JsonPlaceholder");
         using var response = await client.GetAsync($"/posts/{id}", cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
@@ -51,6 +51,13 @@ public class ExternalPostService
         var post = await JsonSerializer.DeserializeAsync<ExternalPostDto>(stream, _serializerOptions,
             cancellationToken);
         return post;
+    }
+
+    public async Task<bool> PingAsync(CancellationToken cancellationToken)
+    {
+        var client = _httpClientFactory.CreateClient("JsonPlaceholder");
+        using var response = await client.GetAsync("/posts/1", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        return response.IsSuccessStatusCode;
     }
 
     public sealed class ExternalApiException : Exception
