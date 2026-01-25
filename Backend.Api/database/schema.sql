@@ -1,0 +1,21 @@
+IF DB_ID(N'PostDb') IS NULL
+BEGIN
+    CREATE DATABASE PostDb;
+END
+GO
+
+USE PostDb;
+GO
+
+IF OBJECT_ID(N'dbo.Posts',N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Posts
+    (
+        Id INT NOT NULL PRIMARY KEY,
+        UserId INT NOT NULL,
+        Title NVARCHAR(200) NOT NULL,
+        Body NVARCHAR(MAX) NOT NULL,
+        FetchedAtUtc DATETIME2 NOT NULL
+    );
+END
+GO
