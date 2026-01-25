@@ -12,12 +12,12 @@ namespace Backend.Api.Controllers;
 public sealed class PostController : ControllerBase
 {
     private readonly IPostRepository _repository;
-    private readonly ExternalPostService  _externalPostService;
+    private readonly ExternalPostService _externalService;
 
     public PostController(IPostRepository repository, ExternalPostService externalService)
     {
         _repository = repository;
-        _externalPostService = externalService;
+        _externalService = externalService;
     }
 
     [HttpGet]
@@ -28,7 +28,7 @@ public sealed class PostController : ControllerBase
             var count = await _repository.GetCountAsync(cancellationToken);
             if (count == 0)
             {
-                var externalPosts = await _externalPostService.GetAllAsync(cancellationToken);
+                var externalPosts = await _externalService.GetAllAsync(cancellationToken);
                 if (externalPosts.Count > 0)
                 {
                     var records = externalPosts.Select(MapToRecord).ToList();
@@ -37,6 +37,8 @@ public sealed class PostController : ControllerBase
 
                 return Ok(externalPosts.Select(MapToResponse).ToList());
             }
+            var cached = await _repository.GetAllAsync(cancellationToken);
+            return Ok(cached.Select(MapToResponse).ToList());
         }
         catch (ExternalPostService.ExternalApiException ex)
         {
@@ -56,7 +58,7 @@ public sealed class PostController : ControllerBase
         }
     }
 
-    [HttpGet("{id:int")]
+[HttpGet("{id:int}")]
     public async Task<ActionResult<PostResponseDto>> GetById(int id, CancellationToken cancellationToken)
     {
         try
@@ -64,9 +66,34 @@ public sealed class PostController : ControllerBase
             var cached = await _repository.GetByIdAsync(id, cancellationToken);
             if (cached is not null)
             {
-                
+                return Ok(MapToResponse(cached));
             }
 
+            var externalPost = await _externalService.GetByIdAsync(id, cancellationToken);
+            if (externalPost is null)
+            {
+                return NotFound(new { message = $"Post {id} not found." });
+            }
+
+            var record = MapToRecord(externalPost);
+            await _repository.InsertAsync(record, cancellationToken);
+            return Ok(MapToResponse(record));
+        }
+        catch (ExternalPostService.ExternalApiException ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                message = ex.Message,
+                status = (int)ex.StatusCode
+            });
+        }
+        catch (SqlException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                message = "Database error occurred while fetching posts.",
+                detail = ex.Message
+            });
         }
     }
     private static PostRecord MapToRecord(ExternalPostDto post)
@@ -78,6 +105,16 @@ public sealed class PostController : ControllerBase
             Title = post.Title ?? string.Empty,
             Body = post.Body ?? string.Empty,
             FetchedAtUtc = DateTime.UtcNow
+        };
+    }
+    private static PostResponseDto MapToResponse(PostRecord post)
+    {
+        return new PostResponseDto
+        {
+            Id = post.Id,
+            UserId = post.UserId,
+            Title = post.Title,
+            Body = post.Body
         };
     }
     private static PostResponseDto MapToResponse(ExternalPostDto post)
