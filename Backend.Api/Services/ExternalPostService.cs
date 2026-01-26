@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
+using Backend.Api;
 using Backend.Api.Dtos;
-using Backend.Api.Models;
 
 
 namespace Backend.Api.Services;
@@ -18,8 +18,8 @@ public class ExternalPostService
 
     public async Task<IReadOnlyList<ExternalPostDto>> GetAllAsync(CancellationToken cancellationToken)
     {
-        var client = _httpClientFactory.CreateClient("JsonPlaceholder");
-        using var response = await client.GetAsync("/posts", cancellationToken);
+        var client = _httpClientFactory.CreateClient(Constants.JsonPlaceholderClientName);
+        using var response = await client.GetAsync(Constants.PostsEndpoint, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
             throw new ExternalApiException("❗Failed to fetch posts from external API.", response.StatusCode);
@@ -34,8 +34,9 @@ public class ExternalPostService
 
     public async Task<ExternalPostDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var client = _httpClientFactory.CreateClient("JsonPlaceholder");
-        using var response = await client.GetAsync($"/posts/{id}", cancellationToken);
+        var client = _httpClientFactory.CreateClient(Constants.JsonPlaceholderClientName);
+        var endpoint = Constants.PostByIdEndpoint.Replace("{id}", id.ToString());
+        using var response = await client.GetAsync(endpoint, cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -55,7 +56,7 @@ public class ExternalPostService
 
     public async Task<bool> PingAsync(CancellationToken cancellationToken)
     {
-        var client = _httpClientFactory.CreateClient("JsonPlaceholder");
+        var client = _httpClientFactory.CreateClient(Constants.JsonPlaceholderClientName);
         using var response = await client.GetAsync("/posts/1", HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         return response.IsSuccessStatusCode;
     }

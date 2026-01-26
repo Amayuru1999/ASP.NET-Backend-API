@@ -1,3 +1,4 @@
+using Backend.Api;
 using Backend.Api.Data;
 using Backend.Api.Dtos;
 using Backend.Api.Models;
@@ -8,7 +9,7 @@ using Microsoft.Data.SqlClient;
 namespace Backend.Api.Controllers;
 
 [ApiController]
-[Route("api/posts")]
+[Route(Constants.PostsRoute)]
 public sealed class PostController : ControllerBase
 {
     private readonly IPostRepository _repository;

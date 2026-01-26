@@ -6,9 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddHttpClient("JsonPlaceholder", client =>
+builder.Services.AddHttpClient(Backend.Api.Constants.JsonPlaceholderClientName, client =>
 {
-    var baseUrl = builder.Configuration["ExternalApi:BaseUrl"];
+    var baseUrl = builder.Configuration[Backend.Api.Constants.ExternalApiBaseUrlKey];
     if (!string.IsNullOrWhiteSpace(baseUrl))
     {
         client.BaseAddress = new Uri(baseUrl);
