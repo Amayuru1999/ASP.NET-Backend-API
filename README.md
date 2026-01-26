@@ -73,6 +73,18 @@ docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=<YOUR_PASSWORD>" \
   -p 1433:1433 --name my-sql -d mcr.microsoft.com/mssql/server:2022-latest
 ```
 
+### Windows PowerShell
+```powershell
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=<YOUR_PASSWORD>" `
+  -p 1433:1433 --name my-sql -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
+### Windows Command Prompt (cmd)
+```bat
+docker run -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=<YOUR_PASSWORD>" ^
+  -p 1433:1433 --name my-sql -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
 ## Copy and Apply Schema
 ### macOS / Linux (bash/zsh)
 ```bash
