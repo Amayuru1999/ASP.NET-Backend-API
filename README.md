@@ -1,6 +1,6 @@
 # Backend API
 
-Web API fetches from public JSONPlaceholder API and caches them in the SQL server using no ORM with ASP.NET Core.
+Web API fetches from public JSONPlaceholder API(Free) and caches them in the SQL server using no ORM with ASP.NET Core.
 
 ## Tech Stack 
 
