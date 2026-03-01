@@ -15,6 +15,7 @@ Web API fetches from public JSONPlaceholder API(Free) and caches them in the SQL
 * Microsoft.AspNetCore.OpenApi - From this it is generating the Swagger/OpenAPI metadata, from that we can discover and test the API very easily.
 
 ## External API
+
 JSON Placeholder posts: https://jsonplaceholder.typicode.com/
 
 ## Database Schema
